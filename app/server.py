@@ -53,7 +53,14 @@ async def analyze(request):
     data = await request.form()
     img_bytes = await (data['file'].read())
     img = open_image(BytesIO(img_bytes))
-    return JSONResponse({'result': nice_labels[learn.predict(img)[1]]})
+    pred_class,pred_idx,outputs = learn.predict(img)
+    formatted_outputs = ["{:.1f}%".format(value) for value in [x * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]]
+    pred_probs = sorted(
+            zip(nice_labels, map(str, formatted_outputs)),
+            key=lambda p: p[1],
+            reverse=True
+        )
+    return JSONResponse({'result': pred_probs})
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=5041)
