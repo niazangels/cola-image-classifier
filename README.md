@@ -1,6 +1,8 @@
 # cola-image-classifier
 Image classification web app, which serves pytorch image classification backend model trained using **fastai** python library.
 
+The model training script in jupyter notebook: `cola_classifier.ipynb`
+
 You can use your phone to take images and check if they contain Coca Cola, Pepsi Cola and Nuka Cola or not: https://blazys.com/imageclass/
 
 The code was Inspired by Francisco Ingham, Jeremy Howard and Adrian Rosebrock.
