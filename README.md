@@ -1,5 +1,5 @@
 # cola-image-classifier
-Image classification web app, which serves pytorch image classification backend model trained using **fastai** python library.
+Image classification web app, which serves pytorch image classification backend model trained using v1 of the [fastai library](https://github.com/fastai/fastai).
 
 The model training script in jupyter notebook: `cola_classifier.ipynb`
 
