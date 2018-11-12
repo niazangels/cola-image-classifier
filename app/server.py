@@ -57,5 +57,3 @@ async def analyze(request):
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=5041)
-    if 'test' in sys.argv: uvicorn.run(app, host='127.0.0.1', port=5041, log_level="info", debug=True)
-
