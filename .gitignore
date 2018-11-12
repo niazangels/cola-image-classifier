@@ -1,0 +1,4 @@
+# model files
+*.pth
+
+.ipynb_checkpoints/
