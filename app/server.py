@@ -60,7 +60,7 @@ async def analyze(request):
             key=lambda p: p[1],
             reverse=True
         )
-    return JSONResponse({'result': pred_probs})
+    return JSONResponse({'result': pred_probs[0]})
 
 if __name__ == '__main__':
     if 'serve' in sys.argv: uvicorn.run(app, host='0.0.0.0', port=5041)
