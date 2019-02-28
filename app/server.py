@@ -8,15 +8,15 @@ from io import BytesIO
 from fastai import *
 from fastai.vision import *
 
-model_file_url = 'https://www.dropbox.com/s/xj9hzyytbip8ka7/stage-2-299-rn50.pth?raw=1'
-model_file_name = 'model_cola'
+#model_file_url = 'https://www.dropbox.com/s/xj9hzyytbip8ka7/stage-2-299-rn50.pth?raw=1'
+model_file_name = 'model1'
 #model_file_url = 'https://www.dropbox.com/s/y4kl2gv1akv7y4i/stage-2.pth?raw=1'
 #model_file_name = 'model'
-classes = ['coca_cola', 'nuka_cola', 'other', 'pepsi_cola']
-nice_labels = ['Coca Cola', 'Nuka Cola', 'Something Else', 'Pepsi Cola']
+#classes = ['coca_cola', 'nuka_cola', 'other', 'pepsi_cola']
+#nice_labels = ['Coca Cola', 'Nuka Cola', 'Something Else', 'Pepsi Cola']
 size_big = 299
-path = Path(__file__).parent
-
+#path = Path(__file__).parent
+path = Path("/home/jupyter/.fastai/data/notes/")
 defaults.device = torch.device('cpu')
     
 app = Starlette()
@@ -24,17 +24,27 @@ app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_headers=['X-Reques
 app.mount('/static', StaticFiles(directory='app/static'))
 #app.wsgi_app = ReverseProxied(app.wsgi_app)
 
-async def download_file(url, dest):
-    if dest.exists(): return
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            data = await response.read()
-            with open(dest, 'wb') as f: f.write(data)
+#async def download_file(url, dest):
+#    if dest.exists(): return
+#    async with aiohttp.ClientSession() as session:
+#        async with session.get(url) as response:
+#            data = await response.read()
+#            with open(dest, 'wb') as f: f.write(data)
 
+CLASSES = []
 async def setup_learner():
-    await download_file(model_file_url, path/'models'/f'{model_file_name}.pth')
-    data2 = ImageDataBunch.single_from_classes(path, classes, tfms=get_transforms(), size=size_big).normalize(imagenet_stats)
-    learn = create_cnn(data2, models.resnet50)
+    #await download_file(model_file_url, path/'models'/f'{model_file_name}.pth')
+    global CLASSES
+    #data2 = ImageDataBunch.single_from_classes(path, CLASSES, size=size_big).normalize(imagenet_stats)
+    data = ImageDataBunch.from_folder(path, 
+                                  train=path / 'train', 
+                                  valid_pct=0.2,
+                                  ds_tfms=get_transforms(), 
+                                  size=224, 
+                                  num_workers=4
+                                 ).normalize(imagenet_stats)    
+    CLASSES = data.classes
+    learn = create_cnn(data, models.resnet34)
     learn.load(model_file_name)
     return learn
 
@@ -45,7 +55,7 @@ loop.close()
 
 @app.route('/')
 def index(request):
-    html = path/'view'/'index.html'
+    html = Path(__file__).parent / 'view' / 'index.html'
     return HTMLResponse(html.open().read())
 
 @app.route('/analyze', methods=['POST'])
@@ -56,7 +66,7 @@ async def analyze(request):
     pred_class,pred_idx,outputs = learn.predict(img)
     formatted_outputs = ["{:.1f}%".format(value) for value in [x * 100 for x in torch.nn.functional.softmax(outputs, dim=0)]]
     pred_probs = sorted(
-            zip(nice_labels, map(str, formatted_outputs)),
+            zip(CLASSES, map(str, formatted_outputs)),
             key=lambda p: p[1],
             reverse=True
         )
